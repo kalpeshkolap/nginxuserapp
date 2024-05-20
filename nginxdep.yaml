@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-reverse-proxy
+  namespace: userapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-reverse-proxy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  minReadySeconds: 5
+  template:
+    metadata:
+      labels:
+        app: nginx-reverse-proxy
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      containers:
+        - name: nginx-reverse-proxy
+          image: kk2104/nginx:v1 
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+
+
+# service type LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-reverse-proxy
+  namespace: userapp
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx-reverse-proxy
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
